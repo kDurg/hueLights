@@ -73,7 +73,7 @@ async function getLightingData() {
             }
 
         })
-        .catch(err => console.error("ERROR WITH DISCOVERY APP: ", err))
+        .catch(err => console.error("ERROR WITH DISCOVERY APP: ", err.status))
 
     if (!previousData) {
         console.error('ERROR: NO PREVIOUS USER DATA', previousData);
@@ -83,23 +83,35 @@ async function getLightingData() {
     }
 }
 
+// IF WE DO NOT HAVE A USER ASSIGNED YET, WE NEED TO CREATE ONE
 async function getHueUserName(hueData) {
     console.log('gggggg', hueData)
-    if (hueData[0] && hueData[0].internalipaddress){
-        let reqURL = `${hueData[0].internalipaddress}/api`;
+    let usernameID = 'Me78u3OjDQfTnyAdMemLje9-J3uJqyQih-2NZHmL' // aGbX60RgWmgCVTf9BRevBfcZDmjjZ9xd1eow4F8V
+    if (hueData[0] && hueData[0].internalipaddress) {
+        let reqURL = `http://${hueData[0].internalipaddress}/api`;
         // axios.get(reqURL)
         //     .then(res=> {console.log('res  ', res)})
         //     .catch(err=> console.error('ERROR GETTING USERNAME: ', err))
-        
-        axios.post(reqURL, {
-            body: {
-                "devicetype": "my_hue_app#android kyle"
-            }
-        })
-        .then(res => { console.log('res  ', res) })
-        .catch(err => console.error('ERROR GETTING USERNAME: ', err))
 
-    } else { console.error('ERROR: HUE DATA TO GET USERNAME')}
+        let data = {
+            "devicetype": "my_hue_app#kylelaptop"
+        }
+
+        // // SEND HUE BRIDGE NEW USERNAME
+        // axios.post(reqURL, data)
+        //     .then(res => { 
+        //         console.log('res  ', res.data) 
+        //         if (res.success) {
+        //             console.log('Success!', res);
+        //             usernameID = res.username;
+        //         } else { console.log('USER POST ERROR: ', res)}
+        //     })
+        //     .catch(err => console.error('ERROR GETTING USERNAME: ', err))
+
+        // GET LIGHT DATA WITH USERNAME
+        axios.get(reqURL + '/' + usernameID + '/lights')
+        .then(res => { console.log('res222  ', res.data) })
+    } else { console.error('ERROR: HUE DATA TO GET USERNAME') }
 }
 
 async function setUpHue() {
