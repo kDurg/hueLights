@@ -56,20 +56,15 @@ async function getLightingData() {
 
 	// PHILIPS HUE
 	// DISCOVER LOCAL DEVICES ON NETWORK
-	await getHueData()
-	.then(data =>{ lightingData.push(data)}) // FIXME: NOT ADDING TO THE ARRAY?
-	// if (await hueData) {
-	// 	lightingData.push(hueData)
-		console.log('LIGHTING DATA', lightingData)
-	// }
-	
-
 
 	if (!previousData) {
 		console.error('ERROR: NO PREVIOUS USER DATA', previousData);
 	} else {
 		console.log('PREVIOUS DATA CHECK: FINISHED', previousData);
-		await getHueData();
+		await getHueData()
+			.then(data => { lightingData.push(data) }) // FIXME: NOT ADDING TO THE ARRAY?
+		console.log('LIGHTING DATA', lightingData)
+
 	}
 }
 
@@ -77,26 +72,26 @@ async function getHueData() {
 	const discoveryApp = 'https://discovery.meethue.com';
 	let discoveryData;
 	let hueData = new Object();
-	
-	axios.get(discoveryApp)
+
+	return axios.get(discoveryApp)
 		.then(async res => {
 			discoveryData = res.data;
 		})
 		.then(async () => {
 			if (discoveryData) {
-				console.log('RESPONSE: ', discoveryData);
+				// console.log('RESPONSE: ', discoveryData);
 
 				// TODO: CHECK TO SEE IF WE HAVE ANY WHITELISTED USERS
 				// GET HUE LIGHTS INFORMATION FROM BRIDGE
 				let usernameID = 'Me78u3OjDQfTnyAdMemLje9-J3uJqyQih-2NZHmL' // TODO: GET RID OF HARD CODED VALUE, CHECK DB FOR USER AND RETURN ID.
 				let getHueSystemData = `http://${discoveryData[0].internalipaddress}/api/${usernameID}`;
-				axios.get(getHueSystemData)
+				return axios.get(getHueSystemData)
 					.then(res => {
 						if (res && res.status === 200) {
-							// console.log('TTTTTT', res.data);
 							hueData.credentials = {
-								hueId: discoveryData.id,
-								hueBridgeIP: discoveryData.internalipaddress,
+								hueCoreURL: getHueSystemData,
+								hueId: discoveryData[0].id,
+								hueBridgeIP: discoveryData[0].internalipaddress,
 								usernameID: usernameID
 							}
 							hueData.data = res.data;
@@ -109,15 +104,13 @@ async function getHueData() {
 						}
 					})
 					.catch(err => { console.error('ERROR GETTING HUE DATA ', err) })
-
-				return hueData;
 			} else {
 				console.error('ERROR: UNABLE TO GET HUE BRIDGE DATA')
 				return false;
 			}
 		})
 		.catch(err => console.error("ERROR WITH DISCOVERY APP: ", err.status))
-	
+
 }
 
 // IF WE DO NOT HAVE A USER ASSIGNED YET, WE NEED TO CREATE ONE
@@ -206,10 +199,33 @@ async function controlLights() {
 async function controlHueLights(command) {
 	switch (command) {
 		case 'onOff':
-			console.log('TURNED ON/OFF LIGHTS!');
-			if (lightingData){
-				// console.log('OUR LIGHTING DATA: ', lightingData)
-			}
+			let hueData = lightingData[0];
+			console.log('TURNED ON/OFF LIGHTS!',);
+			if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL) {
+				console.log('OUR LIGHTING DATA: ', hueData.data);
+				let hueLights = hueData.data.lights;
+				let hueLightArray = [];
+				let coreURL = hueData.credentials.hueCoreURL;
+				// let lightStateURL = `/lights/`
+
+				if (hueLights) {
+					Object.entries(hueLights).map(light => {
+						let data;
+						let lightID = light;
+						let lightState = light.state;
+						console.log('HERE ARE LIGHT DATAS ', lightID, lightState)
+
+						light.state.on ? data = false : data = true; // FIXME: 'CANNOT READ PROPERTY ON OF UNDEFINED
+
+						axios.put(`${coreURL}/lights/${lightID}/state`, data)
+						.then(res=> {console.log('RES', res)})
+						.catch(err=> {console.error('ERROR CHANGING LIGHT STATUS ', err) })
+					})
+				}
+
+
+
+			} else { console.error('ERROR, NO LIGHTING DATA', hueData) }
 			break;
 	}
 }
