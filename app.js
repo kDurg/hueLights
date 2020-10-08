@@ -206,25 +206,20 @@ async function controlHueLights(command) {
 				let hueLights = hueData.data.lights;
 				let hueLightArray = [];
 				let coreURL = hueData.credentials.hueCoreURL;
-				// let lightStateURL = `/lights/`
 
 				if (hueLights) {
-					Object.entries(hueLights).map(light => {
+					Object.entries(hueLights).forEach(light => {
 						let data;
-						let lightID = light;
-						let lightState = light.state;
-						console.log('HERE ARE LIGHT DATAS ', lightID, lightState)
+						let lightID = light[0];
+						let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
+						let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+						lightState ? data = {"on": false} : data = {"on": true};
 
-						light.state.on ? data = false : data = true; // FIXME: 'CANNOT READ PROPERTY ON OF UNDEFINED
-
-						axios.put(`${coreURL}/lights/${lightID}/state`, data)
-						.then(res=> {console.log('RES', res)})
+						axios.put(builtURL, data)
+						.then(res=> {console.log('SUCCESS RESPONSE', res.data)})
 						.catch(err=> {console.error('ERROR CHANGING LIGHT STATUS ', err) })
-					})
+					});
 				}
-
-
-
 			} else { console.error('ERROR, NO LIGHTING DATA', hueData) }
 			break;
 	}
