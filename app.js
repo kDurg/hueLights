@@ -83,7 +83,7 @@ async function getHueData() {
 
 				// TODO: CHECK TO SEE IF WE HAVE ANY WHITELISTED USERS
 				// GET HUE LIGHTS INFORMATION FROM BRIDGE
-				let usernameID = 'Me78u3OjDQfTnyAdMemLje9-J3uJqyQih-2NZHmL' // TODO: GET RID OF HARD CODED VALUE, CHECK DB FOR USER AND RETURN ID.
+				let usernameID = 'Me78u3OjDQfTnyAdMemLje9-J3uJqyQih-2NZHmL'; // TODO: GET RID OF HARD CODED VALUE, CHECK DB FOR USER AND RETURN ID.
 				let getHueSystemData = `http://${discoveryData[0].internalipaddress}/api/${usernameID}`;
 				return axios.get(getHueSystemData)
 					.then(res => {
@@ -183,6 +183,7 @@ async function controlLights() {
 						break;
 
 					case 'Change Colors':
+						controlHueLights('changeColors')
 						break;
 
 					case 'Back':
@@ -196,31 +197,57 @@ async function controlLights() {
 	}
 }
 
-async function controlHueLights(command) {
-	switch (command) {
-		case 'onOff':
-			let hueData = lightingData[0];
-			console.log('TURNED ON/OFF LIGHTS!',);
-			if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL) {
-				console.log('OUR LIGHTING DATA: ', hueData.data);
-				let hueLights = hueData.data.lights;
-				let hueLightArray = [];
-				let coreURL = hueData.credentials.hueCoreURL;
+async function controlHueLights(command, modifier) {
+	if (lightingData[0]) {
+		let hueData = lightingData[0];
+		let hueLights = hueData.data.lights;
+		let hueLightArray = [];
+		let coreURL = hueData.credentials.hueCoreURL;
 
-				if (hueLights) {
-					Object.entries(hueLights).forEach(light => {
-						let data;
-						let lightID = light[0];
-						let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
-						let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
-						lightState ? data = {"on": false} : data = {"on": true};
+		switch (command) {
+			case 'onOff': // TODO: LETS JUST COMBINE THIS BY SENDING ALL OF STATE IN VIA MODIFIER
+				console.log('TURNED ON/OFF LIGHTS!',);
+				if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL) {
+					console.log('OUR LIGHTING DATA: ', hueData.data);
 
-						axios.put(builtURL, data)
-						.then(res=> {console.log('SUCCESS RESPONSE', res.data)})
-						.catch(err=> {console.error('ERROR CHANGING LIGHT STATUS ', err) })
-					});
+					if (hueLights) {
+						Object.entries(hueLights).forEach(light => {
+							let data;
+							let lightID = light[0];
+							let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
+							let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+							lightState ? data = { "on": false } : data = { "on": true };
+
+							axios.put(builtURL, data)
+								.then(res => { console.log('SUCCESS RESPONSE', res.data) })
+								.catch(err => { console.error('ERROR CHANGING LIGHT STATUS ', err) })
+						});
+					}
+				} else { console.error('ERROR, NO LIGHTING DATA', hueData) }
+				break;
+
+			case 'changeColors':
+				if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL && modifier) {
+					if (hueLights) {
+						Object.entries(hueLights).forEach(light => {
+							let data;
+							let lightID = light[0];
+							let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
+							let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+							
+							if (modifier){
+								let lightingData = modifier;
+							}
+
+							// axios.put(builtURL, data)
+							// 	.then(res => { console.log('SUCCESS RESPONSE', res.data) })
+							// 	.catch(err => { console.error('ERROR CHANGING LIGHT STATUS ', err) })
+						});
+					}
+					else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
 				}
-			} else { console.error('ERROR, NO LIGHTING DATA', hueData) }
-			break;
+				break;
+
+		}
 	}
 }
