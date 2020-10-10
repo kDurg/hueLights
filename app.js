@@ -235,7 +235,7 @@ async function controlHueLights(command, modifier) {
 							let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
 							let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
 							
-							if (modifier){
+							if (modifier && lightState){
 								let lightingData = modifier;
 							}
 
