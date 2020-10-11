@@ -1,2 +1,2 @@
 # hueLights
-Basic Node server to control hue lights
+[IN PROGRESS] Next.js to control Philips Hue lights
