@@ -5,6 +5,7 @@ import Link from 'next/link';
 const axios = require('axios');
 
 // GLOBAL TEMPORARY VARIABLES
+let currentLightState;
 let lightingData =[];
 
 async function checkForProfileData() {
@@ -17,8 +18,6 @@ async function controlHueLights(command, modifier) {
     let hueLights = hueData.data.lights;
     let hueLightArray = [];
     let coreURL = hueData.credentials.hueCoreURL;
-
-    console.log('BEFORE SWITCH COMMAND::::')
 
     switch (command) {
       case 'onOff': // TODO: LETS JUST COMBINE THIS BY SENDING ALL OF STATE IN VIA MODIFIER
@@ -40,7 +39,7 @@ async function controlHueLights(command, modifier) {
             });
           }
         } else { console.error('ERROR, NO LIGHTING DATA', hueData) }
-        break;
+      break;
 
       case 'changeColors':
         if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL && modifier) {
@@ -62,8 +61,7 @@ async function controlHueLights(command, modifier) {
           }
           else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
         }
-        break;
-
+      break;
     }
   }
 }
@@ -125,7 +123,10 @@ async function getLightingData() {
 		console.log('PREVIOUS DATA CHECK: FINISHED', previousData);
 		await getHueData()
 			.then(data => { lightingData.push(data) }) // FIXME: NOT ADDING TO THE ARRAY?
-		console.log('LIGHTING DATA', lightingData)
+    console.log('LIGHTING DATA', lightingData)
+    if (lightingData){
+      await getLightOnOffStatus()
+    }
 
 	}
 }
@@ -134,8 +135,23 @@ async function toggleAllLights(){
   return await controlHueLights('onOff')
 }
 
-export default function Home() {
-  {getLightingData()}
+async function getLightOnOffStatus(){
+  if (lightingData && lightingData[0] && lightingData[0].lights){
+    let lights = lightingData[0].lights;
+    return (
+      console.log('OUR LGIHTS', lights)
+    )
+  } else { console.log('no lighting data')}
+}
+
+export async function getStaticProps(context){
+  return {props:{}}
+}
+
+
+export default async function Home() {
+  getLightingData()
+
   return (   
     <div className={styles.container}>
       <Head>
@@ -149,7 +165,7 @@ export default function Home() {
         </h1>
 
         <div className={styles.grid}>
-          <a className={styles.card} onClick={toggleAllLights}>
+          <a className={styles.card} onClick={toggleAllLights}>(
             <h3>On/ Off &rarr;</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
             {/* <p>Find in-depth information about Next.js features and API.</p> */}
           </a>
