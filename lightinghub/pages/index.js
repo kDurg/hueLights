@@ -21,27 +21,44 @@ async function controlHueLights(command, modifier) {
 
     switch (command) {
       case 'onOff': // TODO: LETS JUST COMBINE THIS BY SENDING ALL OF STATE IN VIA MODIFIER
-        console.log('TURNED ON/OFF LIGHTS!',);
+        console.log('TURNED ON/OFF LIGHTS!');
         if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL) {
           console.log('OUR LIGHTING DATA: ', hueData.data);
 
-          if (hueLights) {
-            Object.entries(hueLights).forEach(light => {
-              let data;
-              let lightID = light[0];
-              let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
-              let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+          if (currentLightState === undefined) {
+            if (hueLights) {
+              // SET CURRENTLIGHTSTATE BASED ON CURRENT LIGHT STATUS
+              Object.entries(hueLights).forEach(async light => {
+                let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
+                if (lightState) {
+                  currentLightState = true
+                }
+              });
 
-              lightState ? currentLightState = true : null;
-              currentLightState ? data = {'on': currentLightState} : data = {'on': !currentLightState} // FIXME: NOT TOGGLING CORRECTLY HERE OR ABOVE?
-
-              console.log('LIGHT STATUS: ', currentLightState)
-              axios.put(builtURL, data)
-                .then(res => { console.log('SUCCESS RESPONSE', res.data) })
-                .catch(err => { console.error('ERROR CHANGING LIGHT STATUS ', err) })
-            });
+              // IF CURRENTLIGHTSTATE IS STILL UNDEFINED, WE NEED TO ADD A VALUE AND TURN ON THE LIGHT
+              if (currentLightState === undefined) {
+                currentLightState = false;
+                let data = { 'on': !currentLightState };
+                Object.entries(hueLights).forEach(async light => {
+                  let lightID = light[0];
+                  let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+                  sendHueReq(builtURL, data);
+                  toggleMenuName(); // FIXME: THIS WONT TOGGLE NAME SINCE ITS NOT AFFECTING THE RENDER
+                })
+              }
+            }
+          } else { // WE HAVE VALUES FOR OUR LIGHTS, LETS TOGGLE THEM BASED ON CURRENT STATE
+            if (hueLights) {
+              Object.entries(hueLights).forEach(light => {
+                let data = { 'on': !currentLightState };
+                let lightID = light[0];
+                let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+                sendHueReq(builtURL, data);
+                toggleMenuName(); // FIXME: THIS WONT TOGGLE NAME SINCE ITS NOT AFFECTING THE RENDER
+              })
+              currentLightState = !currentLightState;
+            }
           }
-
 
         } else { console.error('ERROR, NO LIGHTING DATA', hueData) }
         break;
@@ -59,9 +76,7 @@ async function controlHueLights(command, modifier) {
                 let lightingData = modifier;
               }
 
-              // axios.put(builtURL, data)
-              // 	.then(res => { console.log('SUCCESS RESPONSE', res.data) })
-              // 	.catch(err => { console.error('ERROR CHANGING LIGHT STATUS ', err) })
+
             });
           }
           else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
@@ -127,11 +142,21 @@ async function getLightingData() {
   } else {
     console.log('PREVIOUS DATA CHECK: FINISHED', previousData);
     await getHueData()
-      .then(data => { lightingData.push(data) }) // FIXME: NOT ADDING TO THE ARRAY?
+      .then(data => { return lightingData.push(data) }) // FIXME: NOT ADDING TO THE ARRAY?
     console.log('LIGHTING DATA', lightingData)
     if (lightingData) {
       // await getLightOnOffStatus()
     }
+  }
+}
+
+async function sendHueReq(url, data) {
+  if (url && data) {
+    axios.put(url, data)
+      .then(res => { console.log('SUCCESS RESPONSE', res.data) })
+      .catch(err => { console.error('ERROR CHANGING LIGHT STATUS ', err) })
+  } else {
+    console.error('ERROR: HUE URL OR DATA NOT VALID', url, data)
   }
 }
 
@@ -148,6 +173,14 @@ async function getLightOnOffStatus() {
   } else { console.log('no lighting data') }
 }
 
+function toggleMenuName() {
+  if (currentLightState === true || currentLightState === false){
+    return (currentLightState ? 'Turn Off' : 'Turn On')
+  } else {
+    return 'Turn On';
+  }
+}
+
 // export async function getStaticProps(context) {
 //   return {
 //     props: {
@@ -158,7 +191,8 @@ async function getLightOnOffStatus() {
 
 
 export default function Home() {
-  getLightingData()
+  getLightingData();
+  let onOffButtonName = toggleMenuName(); // FIXME: THIS IS NOT RERENDERING SINCE THERE IS NO STATE.
 
   return (
     <div className={styles.container}>
@@ -173,8 +207,8 @@ export default function Home() {
         </h1>
 
         <div className={styles.grid}>
-          <a className={styles.card} onClick={toggleAllLights}>(
-            <h3>On/ Off &rarr;</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
+          <a className={styles.card} onClick={toggleAllLights}>
+          <h3>{onOffButtonName}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
             {/* <p>Find in-depth information about Next.js features and API.</p> */}
           </a>
 
