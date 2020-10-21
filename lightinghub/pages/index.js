@@ -76,7 +76,6 @@ async function controlHueLights(command, modifier) {
                 let lightingData = modifier;
               }
 
-
             });
           }
           else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
@@ -189,11 +188,21 @@ function toggleMenuName() {
 //   }
 // }
 
-
-export default function Home() {
+export async function getStaticProps() {
   getLightingData();
+  
   let onOffButtonName = toggleMenuName(); // FIXME: THIS IS NOT RERENDERING SINCE THERE IS NO STATE.
 
+  return {
+    props:{
+      onOffButtonName: onOffButtonName
+    }
+  }
+}
+
+
+export default function Home(props) {
+console.log('PROPS', props)
   return (
     <div className={styles.container}>
       <Head>
@@ -208,7 +217,7 @@ export default function Home() {
 
         <div className={styles.grid}>
           <a className={styles.card} onClick={toggleAllLights}>
-          <h3>{onOffButtonName}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
+          <h3>{props.onOffButtonName}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
             {/* <p>Find in-depth information about Next.js features and API.</p> */}
           </a>
 
