@@ -180,14 +180,6 @@ function toggleMenuName() {
   }
 }
 
-// export async function getStaticProps(context) {
-//   return {
-//     props: {
-
-//     }
-//   }
-// }
-
 export async function getStaticProps() {
   getLightingData();
   
