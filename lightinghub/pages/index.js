@@ -63,24 +63,24 @@ async function controlHueLights(command, modifier) {
         } else { console.error('ERROR, NO LIGHTING DATA', hueData) }
         break;
 
-      case 'changeColors':
-        if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL && modifier) {
-          if (hueLights) {
-            Object.entries(hueLights).forEach(light => {
-              let data;
-              let lightID = light[0];
-              let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
-              let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
+      // case 'changeColors':
+      //   if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL && modifier) {
+      //     if (hueLights) {
+      //       Object.entries(hueLights).forEach(light => {
+      //         let data;
+      //         let lightID = light[0];
+      //         let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
+      //         let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
 
-              if (modifier && lightState) {
-                let lightingData = modifier;
-              }
+      //         if (modifier && lightState) {
+      //           let lightingData = modifier;
+      //         }
 
-            });
-          }
-          else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
-        }
-        break;
+      //       });
+      //     }
+      //     else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
+      //   }
+      //   break;
     }
   }
 }
