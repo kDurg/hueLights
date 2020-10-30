@@ -1,6 +1,9 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import Link from 'next/link';
+import React, { Component } from 'react';
+
+
 
 const axios = require('axios');
 
@@ -173,7 +176,7 @@ async function getLightOnOffStatus() {
 }
 
 function toggleMenuName() {
-  if (currentLightState === true || currentLightState === false){
+  if (currentLightState === true || currentLightState === false) {
     return (currentLightState ? 'Turn Off' : 'Turn On')
   } else {
     return 'Turn On';
@@ -182,74 +185,84 @@ function toggleMenuName() {
 
 export async function getStaticProps() {
   getLightingData();
-  
   let onOffButtonName = toggleMenuName(); // FIXME: THIS IS NOT RERENDERING SINCE THERE IS NO STATE.
 
   return {
-    props:{
+    props: {
       onOffButtonName: onOffButtonName
     }
   }
 }
 
 
-export default function Home(props) {
-console.log('PROPS', props)
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Lighting Hub</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+export default class Home extends Component {
+  constructor(props) {
+    console.log('PORPZ: ', props)
+    super(props);
+    this.state = {
+      onOffButtonName: 'Turn On'
+    }
+  }
+  
+  render(props) {
+    
+    console.log('PROPS', props)
+    return (
+      <div className={styles.container}>
+        <Head>
+          <title>Lighting Hub</title>
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Your <a href="https://github.com/kDurg/hueLights">Lighting Hub</a>
-        </h1>
+        <main className={styles.main}>
+          <h1 className={styles.title}>
+            Your <a href="https://github.com/kDurg/hueLights">Lighting Hub</a>
+          </h1>
 
-        <div className={styles.grid}>
-          <a className={styles.card} onClick={toggleAllLights}>
-          <h3>{props.onOffButtonName}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
-            {/* <p>Find in-depth information about Next.js features and API.</p> */}
-          </a>
-
-          <Link href="/controlLights" >
-            <a className={styles.card}>
-              <h3> Control Lights &rarr;</h3>
-              <p>View and control all lights from status to color</p>
+          <div className={styles.grid}>
+            <a className={styles.card} onClick={toggleAllLights}>
+              <h3>{props && props.onOffButtonName ? props.onOffButtonName : this.state.onOffButtonName}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
+              {/* <p>Find in-depth information about Next.js features and API.</p> */}
             </a>
-          </Link>
 
+            <Link href="/controlLights" >
+              <a className={styles.card}>
+                <h3> Control Lights &rarr;</h3>
+                <p>View and control all lights from status to color</p>
+              </a>
+            </Link>
+
+            <a
+              href="https://github.com/vercel/next.js/tree/master/examples"
+              className={styles.card}
+            >
+              <h3>Routines &rarr;</h3>
+              <p>Build routines around time, event or mood</p>
+            </a>
+
+            <a
+              href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+              className={styles.card}
+            >
+              <h3>Settings &rarr;</h3>
+              <p>
+                Setup, Add or remove lights
+                </p>
+            </a>
+          </div>
+        </main>
+
+        <footer className={styles.footer}>
           <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
+            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <h3>Routines &rarr;</h3>
-            <p>Build routines around time, event or mood</p>
+            Powered by{' '}
+            <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
           </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Settings &rarr;</h3>
-            <p>
-              Setup, Add or remove lights
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+        </footer>
+      </div>
+    )
+  }
 }
