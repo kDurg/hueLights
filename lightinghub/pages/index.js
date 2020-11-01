@@ -3,12 +3,9 @@ import styles from '../styles/Home.module.css'
 import Link from 'next/link';
 import React, { Component } from 'react';
 
-
-
 const axios = require('axios');
 
 // GLOBAL TEMPORARY VARIABLES
-let currentLightState;
 let lightingData = [];
 
 async function checkForProfileData() {
@@ -16,8 +13,9 @@ async function checkForProfileData() {
 }
 
 async function controlHueLights(command, modifier) {
-  if (lightingData[0]) {
-    let hueData = lightingData[0];
+  if (this.state.lightingData[0]) {
+    let hueData = this.state.lightingData[0];
+    let currentLightState = this.state.onOffButtonName;
     let hueLights = hueData.data.lights;
     let hueLightArray = [];
     let coreURL = hueData.credentials.hueCoreURL;
@@ -28,13 +26,13 @@ async function controlHueLights(command, modifier) {
         if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL) {
           console.log('OUR LIGHTING DATA: ', hueData.data);
 
-          if (currentLightState === undefined) {
+          if (!currentLightState) {
             if (hueLights) {
               // SET CURRENTLIGHTSTATE BASED ON CURRENT LIGHT STATUS
               Object.entries(hueLights).forEach(async light => {
                 let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
                 if (lightState) {
-                  currentLightState = true
+                  this.setState({ currentLightState: true })
                 }
               });
 
@@ -176,36 +174,47 @@ async function getLightOnOffStatus() {
 }
 
 function toggleMenuName() {
-  if (currentLightState === true || currentLightState === false) {
-    return (currentLightState ? 'Turn Off' : 'Turn On')
-  } else {
-    return 'Turn On';
-  }
-}
+  let currentLightState;
+  let allLightsOn = this.state.currentLightState.allLightsOn;
+  let someLightsOn = this.state.currentLightState.someLightsOn;
 
-export async function getStaticProps() {
-  getLightingData();
-  let onOffButtonName = toggleMenuName(); // FIXME: THIS IS NOT RERENDERING SINCE THERE IS NO STATE.
-
-  return {
-    props: {
-      onOffButtonName: onOffButtonName
-    }
-  }
+  allLightsOn || someLightsOn ? currentLightState = true : currentLightState = false;
+  this.setState({
+    onOffButtonName: currentLightState ? 'Turn Off' : 'Turn On'
+  });
 }
 
 
-export default class Home extends Component {
+class Home extends React.Component {
+  // static async getInitialProps(ctx){
+  //   getLightingData();
+  //   let onOffButtonName = toggleMenuName();
+  //   return {
+  //     props: {
+  //       onOffButtonName: onOffButtonName
+  //     }
+  //   }
+  // }
+
   constructor(props) {
     console.log('PORPZ: ', props)
     super(props);
     this.state = {
-      onOffButtonName: 'Turn On'
+      hueLightingData: {},
+      currentLightState: {
+        allLightsOn: false,
+        someLightsOn: false,
+        onOffButtonName: 'Turn On'
+      }
     }
   }
-  
+
+  componentDidMount() {
+    toggleMenuName
+  }
+
   render(props) {
-    
+
     console.log('PROPS', props)
     return (
       <div className={styles.container}>
@@ -221,7 +230,7 @@ export default class Home extends Component {
 
           <div className={styles.grid}>
             <a className={styles.card} onClick={toggleAllLights}>
-              <h3>{props && props.onOffButtonName ? props.onOffButtonName : this.state.onOffButtonName}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
+              <h3>{this.state.onOffButtonName ? this.state.onOffButtonName : 'Power'}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
               {/* <p>Find in-depth information about Next.js features and API.</p> */}
             </a>
 
@@ -266,3 +275,4 @@ export default class Home extends Component {
     )
   }
 }
+export default Home
