@@ -12,12 +12,11 @@ async function checkForProfileData() {
   return true;
 }
 
-async function controlHueLights(command, modifier) {
-  if (this.state.lightingData[0]) {
-    let hueData = this.state.lightingData[0];
-    let currentLightState = this.state.onOffButtonName;
+async function controlHueLights(command, modifier, data) {
+  if (data && data.lightingData) {
+    let hueData = data.lightingData[0];
+    let currentLightState = data.onOffButtonName;
     let hueLights = hueData.data.lights;
-    let hueLightArray = [];
     let coreURL = hueData.credentials.hueCoreURL;
 
     switch (command) {
@@ -32,19 +31,19 @@ async function controlHueLights(command, modifier) {
               Object.entries(hueLights).forEach(async light => {
                 let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
                 if (lightState) {
-                  this.setState({ currentLightState: true })
+                  currentLightState = true;
                 }
               });
 
               // IF CURRENTLIGHTSTATE IS STILL UNDEFINED, WE NEED TO ADD A VALUE AND TURN ON THE LIGHT
               if (currentLightState === undefined) {
                 currentLightState = false;
-                let data = { 'on': !currentLightState };
+                let lightData = { 'on': !currentLightState };
                 Object.entries(hueLights).forEach(async light => {
                   let lightID = light[0];
                   let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
-                  sendHueReq(builtURL, data);
-                  toggleMenuName(); // FIXME: THIS WONT TOGGLE NAME SINCE ITS NOT AFFECTING THE RENDER
+                  sendHueReq(builtURL, lightData);
+                  toggleMenuName(data); // FIXME: THIS WONT TOGGLE NAME SINCE ITS NOT AFFECTING THE RENDER
                 })
               }
             }
@@ -55,7 +54,7 @@ async function controlHueLights(command, modifier) {
                 let lightID = light[0];
                 let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
                 sendHueReq(builtURL, data);
-                toggleMenuName(); // FIXME: THIS WONT TOGGLE NAME SINCE ITS NOT AFFECTING THE RENDER
+                toggleMenuName(data); // FIXME: THIS WONT TOGGLE NAME SINCE ITS NOT AFFECTING THE RENDER
               })
               currentLightState = !currentLightState;
             }
@@ -83,6 +82,9 @@ async function controlHueLights(command, modifier) {
       //   }
       //   break;
     }
+  } else {
+    console.error('ERROR: NO LIGHTING DATA');
+    return;
   }
 }
 
@@ -160,42 +162,18 @@ async function sendHueReq(url, data) {
   }
 }
 
-async function toggleAllLights() {
-  return await controlHueLights('onOff')
-}
-
 async function getLightOnOffStatus() {
   if (lightingData && lightingData[0] && lightingData[0].lights) {
     let lights = lightingData[0].lights;
     return (
-      console.log('OUR LGIHTS', lights)
+      console.log('OUR LIGHTS', lights)
     )
   } else { console.log('no lighting data') }
 }
 
-function toggleMenuName() {
-  let currentLightState;
-  let allLightsOn = this.state.currentLightState.allLightsOn;
-  let someLightsOn = this.state.currentLightState.someLightsOn;
-
-  allLightsOn || someLightsOn ? currentLightState = true : currentLightState = false;
-  this.setState({
-    onOffButtonName: currentLightState ? 'Turn Off' : 'Turn On'
-  });
-}
 
 
 class Home extends React.Component {
-  // static async getInitialProps(ctx){
-  //   getLightingData();
-  //   let onOffButtonName = toggleMenuName();
-  //   return {
-  //     props: {
-  //       onOffButtonName: onOffButtonName
-  //     }
-  //   }
-  // }
-
   constructor(props) {
     console.log('PORPZ: ', props)
     super(props);
@@ -210,7 +188,23 @@ class Home extends React.Component {
   }
 
   componentDidMount() {
-    toggleMenuName
+    this.toggleMenuName();
+  }
+
+  async toggleAllLights() {
+    await controlHueLights('onOff', null, this.state);
+    return;
+  }
+
+  toggleMenuName() {
+    let currentLightStateName;
+    let allLightsOn = this.state.currentLightState.allLightsOn;
+    let someLightsOn = this.state.currentLightState.someLightsOn;
+
+    allLightsOn || someLightsOn ? currentLightStateName = true : currentLightStateName = false;
+    this.setState({
+      onOffButtonName: currentLightStateName ? 'Turn Off' : 'Turn On'
+    });
   }
 
   render(props) {
@@ -229,8 +223,8 @@ class Home extends React.Component {
           </h1>
 
           <div className={styles.grid}>
-            <a className={styles.card} onClick={toggleAllLights}>
-              <h3>{this.state.onOffButtonName ? this.state.onOffButtonName : 'Power'}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
+            <a className={styles.card} onClick={this.toggleAllLights}>
+              <h3>{this.state.currentLightState.onOffButtonName ? this.state.currentLightState.onOffButtonName : 'Power'}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
               {/* <p>Find in-depth information about Next.js features and API.</p> */}
             </a>
 
