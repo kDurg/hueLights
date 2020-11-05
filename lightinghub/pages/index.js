@@ -225,7 +225,6 @@ class Home extends React.Component {
           <div className={styles.grid}>
             <a className={styles.card} onClick={this.toggleAllLights}>
               <h3>{this.state.currentLightState.onOffButtonName ? this.state.currentLightState.onOffButtonName : 'Power'}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
-              {/* <p>Find in-depth information about Next.js features and API.</p> */}
             </a>
 
             <Link href="/controlLights" >
