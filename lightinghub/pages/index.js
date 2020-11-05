@@ -3,6 +3,8 @@ import styles from '../styles/Home.module.css'
 import Link from 'next/link';
 import React, { Component } from 'react';
 
+import FormBuilder from '../../src/Components/FormBuilder.js';
+
 const axios = require('axios');
 
 // GLOBAL TEMPORARY VARIABLES
