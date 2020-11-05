@@ -1,6 +1,6 @@
 // PURPOSE: COMPONENTS USED TO BUILD PAGES AND FORMS
 
-const FormBuilder = (props) => {
+export default function FormBuilder (props) {
 	// PROPS: (name, )
 	if (props && props.name) {
 		switch (props.name) {

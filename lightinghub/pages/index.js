@@ -3,7 +3,7 @@ import styles from '../styles/Home.module.css'
 import Link from 'next/link';
 import React, { Component } from 'react';
 
-import FormBuilder from '../../src/Components/FormBuilder.js';
+import FormBuilder from '../Components/FormBuilder.js';
 
 const axios = require('axios');
 
@@ -231,6 +231,10 @@ class Home extends React.Component {
 
             <Link href="/controlLights" >
               <a className={styles.card}>
+                <FormBuilder
+                  name='test'>
+                  
+                </FormBuilder>
                 <h3> Control Lights &rarr;</h3>
                 <p>View and control all lights from status to color</p>
               </a>
