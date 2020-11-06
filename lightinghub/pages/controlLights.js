@@ -9,8 +9,6 @@ export default function initialize() {
 					<Link href='/'>Back</Link>
 				</button>
 				<button>Change Color</button>
-				<button></button>
-
 			</div>
 		</>
 	)

@@ -3,6 +3,10 @@ import styles from '../styles/Home.module.css'
 import Link from 'next/link';
 import React, { Component } from 'react';
 
+// PAGES
+import ControlLights from './controlLights';
+
+// COMPONENTS
 import FormBuilder from '../Components/FormBuilder.js';
 
 const axios = require('axios');
@@ -174,7 +178,6 @@ async function getLightOnOffStatus() {
 }
 
 
-
 class Home extends React.Component {
   constructor(props) {
     console.log('PORPZ: ', props)
@@ -231,12 +234,8 @@ class Home extends React.Component {
 
             <Link href="/controlLights" >
               <a className={styles.card}>
-                <FormBuilder
-                  name='test'>
-                  
-                </FormBuilder>
-                <h3> Control Lights &rarr;</h3>
-                <p>View and control all lights from status to color</p>
+                  <h3> Control Lights &rarr;</h3>
+                  <p>View and control all lights from status to color</p>
               </a>
             </Link>
 
