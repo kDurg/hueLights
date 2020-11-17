@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import Link from 'next/link';
+import { Link, useRouter } from 'next/link';
 import React, { Component } from 'react';
 
 // PAGES
@@ -212,6 +212,19 @@ class Home extends React.Component {
     });
   }
 
+  populateCtrlLightsBtn() {
+
+  }
+
+  renderControlLights(){
+    return(
+      <ControlLights 
+        state={this.state}
+      />
+    )
+  }
+
+
   render(props) {
 
     console.log('PROPS', props)
@@ -232,11 +245,11 @@ class Home extends React.Component {
               <h3>{this.state.currentLightState.onOffButtonName ? this.state.currentLightState.onOffButtonName : 'Power'}</h3> {/*TODO: SWITCH STATE AND IMAGE BASED ON CURRENT LIGHT STATUS */}
             </a>
 
-            <Link href="/controlLights" >
-              <a className={styles.card}>
-                  <h3> Control Lights &rarr;</h3>
-                  <p>View and control all lights from status to color</p>
-              </a>
+            <Link href={this.renderControlLights(this.state)}>
+              <div className={styles.grid}>
+                <h3> Control Lights &rarr;</h3>
+                <p>View and control all lights from status to color</p>
+              </div>
             </Link>
 
             <a
