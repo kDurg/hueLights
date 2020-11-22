@@ -11,6 +11,7 @@ import FormBuilder from '../Components/FormBuilder.js';
 
 const axios = require('axios');
 
+// ===================== SERVER SIDE =====================
 // GLOBAL TEMPORARY VARIABLES
 let lightingData = [];
 
@@ -69,24 +70,6 @@ async function controlHueLights(command, modifier, data) {
         } else { console.error('ERROR, NO LIGHTING DATA', hueData) }
         break;
 
-      // case 'changeColors':
-      //   if (hueData && hueData.data && hueData.credentials && hueData.credentials.hueCoreURL && modifier) {
-      //     if (hueLights) {
-      //       Object.entries(hueLights).forEach(light => {
-      //         let data;
-      //         let lightID = light[0];
-      //         let lightState = light[1].state.on; // TODO: CAN THIS BE CLEANED UP BETTER?
-      //         let builtURL = `${coreURL}/lights/${lightID}/state/${lightID}`;
-
-      //         if (modifier && lightState) {
-      //           let lightingData = modifier;
-      //         }
-
-      //       });
-      //     }
-      //     else { console.error('ERROR NO LIGHTS FOR COLOR CHANGE') }
-      //   }
-      //   break;
     }
   } else {
     console.error('ERROR: NO LIGHTING DATA');
@@ -178,9 +161,9 @@ async function getLightOnOffStatus() {
 }
 
 
+// ===================== CLIENT SIDE =====================
 class Home extends React.Component {
   constructor(props) {
-    console.log('PORPZ: ', props)
     super(props);
     this.state = {
       hueLightingData: {},
@@ -188,7 +171,8 @@ class Home extends React.Component {
         allLightsOn: false,
         someLightsOn: false,
         onOffButtonName: 'Turn On'
-      }
+      },
+      currentPage: 'controlLights',
     }
   }
 
@@ -201,20 +185,22 @@ class Home extends React.Component {
     return;
   }
 
-  toggleMenuName() {
-    let currentLightStateName;
-    let allLightsOn = this.state.currentLightState.allLightsOn;
-    let someLightsOn = this.state.currentLightState.someLightsOn;
-
-    allLightsOn || someLightsOn ? currentLightStateName = true : currentLightStateName = false;
-    this.setState({
-      onOffButtonName: currentLightStateName ? 'Turn Off' : 'Turn On'
-    });
+  renderScreen() {
+    if (!this.state.currentPage || this.state.currentPage === 'lightingDash') {
+      return this.renderLightingDash()
+    } else {
+      switch (this.state.currentPage) {
+        case 'controlLights':
+          return <ControlLights
+            previousPage='lightingDash'
+            state={this.state}
+            updateState={(data)=>this.updateState(data)}
+          />
+      }
+    }
   }
 
-  render(props) {
-
-    console.log('PROPS', props)
+  renderLightingDash(props) {
     return (
       <div className={styles.container}>
         <Head>
@@ -234,8 +220,8 @@ class Home extends React.Component {
 
             <Link href="/controlLights" >
               <a className={styles.card}>
-                  <h3> Control Lights &rarr;</h3>
-                  <p>View and control all lights from status to color</p>
+                <h3> Control Lights &rarr;</h3>
+                <p>View and control all lights from status to color</p>
               </a>
             </Link>
 
@@ -272,5 +258,31 @@ class Home extends React.Component {
       </div>
     )
   }
+
+  toggleMenuName() {
+    let currentLightStateName;
+    let allLightsOn = this.state.currentLightState.allLightsOn;
+    let someLightsOn = this.state.currentLightState.someLightsOn;
+
+    allLightsOn || someLightsOn ? currentLightStateName = true : currentLightStateName = false;
+    this.setState({
+      onOffButtonName: currentLightStateName ? 'Turn Off' : 'Turn On'
+    });
+  }
+
+  updateState(data){
+    console.log('Updating State with: ', data)
+    data ? this.setState({data}) : null
+  }
+
+  render(props) {
+    // console.log('PROPS', props)
+    return (
+      <>
+        {this.renderScreen(props)}
+      </>
+    )
+  }
 }
+
 export default Home
