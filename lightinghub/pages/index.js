@@ -3,11 +3,14 @@ import styles from '../styles/Home.module.css'
 import Link from 'next/link';
 import React, { Component } from 'react';
 
-// PAGES
-import ControlLights from './controlLights';
-
 // COMPONENTS
 import FormBuilder from '../Components/FormBuilder.js';
+
+// LOGIC
+import HueLogic from '../LightingHubs/hue';
+
+// PAGES
+import hueController from '../LightingHubs/hue';
 
 const axios = require('axios');
 
@@ -194,6 +197,7 @@ class Home extends React.Component {
 
   componentDidMount() {
     this.toggleMenuName();
+    hueController('test')
   }
 
   async toggleAllLights() {
@@ -234,8 +238,8 @@ class Home extends React.Component {
 
             <Link href="/controlLights" >
               <a className={styles.card}>
-                  <h3> Control Lights &rarr;</h3>
-                  <p>View and control all lights from status to color</p>
+                <h3> Control Lights &rarr;</h3>
+                <p>View and control all lights from status to color</p>
               </a>
             </Link>
 
