@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import HueLogic from '../LightingHubs/hue'
+
 export default function initialize(props) {
 	console.log('ControlLights Props: ', props)
 
@@ -17,13 +19,12 @@ export default function initialize(props) {
 		}
 	}
 
-
 	return (
 		<>
 			<h1>Control Lights</h1>
 			<div className='lightingContainer'>
 				<button>
-					<Link href={renderLightingDash}>Back</Link>
+					{/* <Link href={renderLightingDash}>Back</Link> */}
 				</button>
 				<button>Change Color</button>
 			</div>
